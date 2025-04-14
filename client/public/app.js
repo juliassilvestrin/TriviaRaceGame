@@ -29,7 +29,8 @@ Vue.createApp({
             this.connectionStatus = "connecting";
 
 
-            const wsUrl = "ws://localhost:3000";
+            const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+            const wsUrl = wsProtocol + window.location.host;
 
             console.log(`Connecting to WebSocket server at ${wsUrl}`);
             this.socket = new WebSocket(wsUrl);
@@ -109,7 +110,7 @@ Vue.createApp({
                     this.answerResult = null;
                     this.timeLeft = 15;
 
-                    // Start timer
+
                     clearInterval(this.timerInterval);
                     this.timerInterval = setInterval(() => {
                         this.timeLeft--;
@@ -263,7 +264,6 @@ Vue.createApp({
             this.selectedAnswer = null;
             this.answerResult = null;
             this.currentQuestion = null;
-
 
             this.gameState = "login";
 
