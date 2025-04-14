@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia Race</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&family=Racing+Sans+One&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <h1>Trivia Race</h1>
+
+        <div v-if="gameState === 'login'" class="container login-screen">
+            <h2>Join the Race</h2>
+            <div class="login-form">
+                <input type="text" v-model="playerName" placeholder="Your Name" maxlength="15">
+
+                <div>
+                    <p>Choose your car color:</p>
+                    <div class="color-selector">
+                        <div v-for="color in availableColors"
+                            :style="{ backgroundColor: color, opacity: usedColors.includes(color) && color !== playerColor ? 0.3 : 1 }"
+                            :class="['color-option', { selected: playerColor === color }]"
+                            @click="usedColors.includes(color) && color !== playerColor ? null : playerColor = color">
+                        </div>
+                    </div>
+                </div>
+
+                <button @click="joinGame">Start Your Engine</button>
+                <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+            </div>
+        </div>
+
+
+        <div v-if="gameState === 'waiting'" class="container waiting-screen">
+            <h2>Drivers Ready</h2>
+            <p>Waiting for more racers to join (need at least 2)</p>
+
+            <div class="player-list">
+                <div v-for="player in players" class="player-item">
+                    <div class="player-color" :style="{ backgroundColor: player.color }"></div>
+                    <span>{{ player.name }}</span>
+                </div>
+            </div>
+        </div>
+
+
+        <div v-if="gameState === 'playing'" class="container game-screen">
+
+            <div class="race-track">
+                <div class="starting-line"></div>
+                <div class="finish-line"></div>
+                <div class="lane-marker"></div>
+                <div v-for="(player, index) in players" class="player-marker" :style="[
+                       { backgroundColor: player.color },
+                       { top: (40 + index * 60) + 'px' },
+                       getPlayerPositionStyle(player.position)
+                     ]" :data-name="player.name">
+                </div>
+            </div>
+
+            <div v-if="countdownMessage" class="countdown-message">
+                {{ countdownMessage }}
+            </div>
+
+            <div v-if="currentQuestion" class="question-container">
+                <div class="timer">
+                    <p>Time Left: {{ timeLeft }}s</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" :style="{ width: (timeLeft / 15 * 100) + '%' }"></div>
+                    </div>
+                </div>
+
+                <p class="question-text">{{ currentQuestion }}</p>
+
+                <div class="answer-options">
+                    <div v-for="(option, index) in questionOptions" :key="index"
+                        :class="['answer-option', getAnswerClass(index)]" @click="submitAnswer(index)">
+                        {{ option }}
+                    </div>
+                </div>
+
+                <div v-if="answerResult" class="answer-feedback">
+                    <p v-if="answerResult.correct">
+                        Correct! Your car advances!
+                    </p>
+                    <p v-else>
+                        Wrong! The correct answer is: {{ answerResult.correctAnswerText }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+
+        <div v-if="gameState === 'gameOver'" class="container game-over">
+            <h2>Finish Line!</h2>
+            <p class="winner-message">🏆 {{ winner }} has won the race! 🏆</p>
+            <button class="return-button" @click="returnToLobby">Return to Lobby</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
