@@ -14,6 +14,12 @@
     <div id="app">
         <h1>Trivia Race</h1>
 
+        <!-- Connection Status -->
+        <div v-if="connectionStatus !== 'connected'" class="connection-status">
+            {{ connectionStatus === 'connecting' ? 'Connecting to server...' : 'Disconnected. Trying to reconnect...' }}
+        </div>
+
+        <!-- Login Screen -->
         <div v-if="gameState === 'login'" class="container login-screen">
             <h2>Join the Race</h2>
             <div class="login-form">
@@ -35,7 +41,7 @@
             </div>
         </div>
 
-
+        <!-- Waiting Screen -->
         <div v-if="gameState === 'waiting'" class="container waiting-screen">
             <h2>Drivers Ready</h2>
             <p>Waiting for more racers to join (need at least 2)</p>
@@ -48,9 +54,9 @@
             </div>
         </div>
 
-
+        <!-- Game Screen -->
         <div v-if="gameState === 'playing'" class="container game-screen">
-
+            <!-- Race Track -->
             <div class="race-track">
                 <div class="starting-line"></div>
                 <div class="finish-line"></div>
@@ -67,6 +73,7 @@
                 {{ countdownMessage }}
             </div>
 
+            <!-- Question Section -->
             <div v-if="currentQuestion" class="question-container">
                 <div class="timer">
                     <p>Time Left: {{ timeLeft }}s</p>
@@ -95,15 +102,16 @@
             </div>
         </div>
 
-
+        <!-- Game Over Screen -->
         <div v-if="gameState === 'gameOver'" class="container game-over">
             <h2>Finish Line!</h2>
             <p class="winner-message">🏆 {{ winner }} has won the race! 🏆</p>
+            <p>A new race will begin soon...</p>
             <button class="return-button" @click="returnToLobby">Return to Lobby</button>
         </div>
     </div>
 
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="app.js"></script>
 </body>
 

@@ -6,8 +6,8 @@ Vue.createApp({
             playerName: "",
             playerColor: "#3498db",
             availableColors: ["#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c"],
-            usedColors: [],
-            gameState: "login",
+            usedColors: [], // Track colors that are already in use
+            gameState: "login", // login, waiting, playing, gameOver
             players: [],
             currentQuestion: null,
             questionOptions: [],
@@ -20,7 +20,7 @@ Vue.createApp({
             countdownMessage: "",
             errorMessage: "",
             raceTrackLength: 5,
-            connectionStatus: "disconnected"
+            connectionStatus: "disconnected" // disconnected, connecting, connected
         };
     },
 
@@ -28,7 +28,7 @@ Vue.createApp({
         connectSocket: function () {
             this.connectionStatus = "connecting";
 
-
+            // Dynamically determine WebSocket URL based on current protocol and host
             const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
             const wsUrl = wsProtocol + window.location.host;
 
@@ -48,7 +48,7 @@ Vue.createApp({
                 console.log("Disconnected from server");
                 this.connectionStatus = "disconnected";
 
-
+                // Try to reconnect after 3 seconds
                 setTimeout(this.connectSocket, 3000);
             });
 
@@ -70,10 +70,10 @@ Vue.createApp({
                 case 'playerList':
                     this.players = data.players;
 
-
+                    // Update used colors based on the player list
                     this.usedColors = this.players.map(player => player.color);
 
-
+                    // If current player's selected color is already used, pick the first available color
                     if (this.usedColors.includes(this.playerColor) && this.gameState === "login") {
                         const availableColor = this.availableColors.find(color => !this.usedColors.includes(color));
                         if (availableColor) {
@@ -87,7 +87,7 @@ Vue.createApp({
                     this.countdown = data.countdown;
                     this.countdownMessage = `Race starting in ${this.countdown}...`;
 
-
+                    // Start countdown
                     const countdownInterval = setInterval(() => {
                         this.countdown--;
                         this.countdownMessage = `Race starting in ${this.countdown}...`;
@@ -95,7 +95,7 @@ Vue.createApp({
                             clearInterval(countdownInterval);
                             this.countdownMessage = "GO! GO! GO!";
 
-
+                            // Clear the "GO!" message after 1.5 seconds
                             setTimeout(() => {
                                 this.countdownMessage = "";
                             }, 1500);
@@ -110,7 +110,7 @@ Vue.createApp({
                     this.answerResult = null;
                     this.timeLeft = 15;
 
-
+                    // Start timer
                     clearInterval(this.timerInterval);
                     this.timerInterval = setInterval(() => {
                         this.timeLeft--;
@@ -152,7 +152,7 @@ Vue.createApp({
                     if (player) {
                         player.position = data.newPosition;
 
-
+                        // Add a short animation for the advancing player
                         const playerElem = document.querySelector(`.player-marker[data-name="${player.name}"]`);
                         if (playerElem) {
                             playerElem.classList.add('advancing');
@@ -208,12 +208,12 @@ Vue.createApp({
 
         submitAnswer: function (answerIndex) {
             if (this.selectedAnswer !== null || this.answerResult !== null) {
-                return;
+                return; // Already answered
             }
 
             this.selectedAnswer = answerIndex;
 
-
+            // Stop the timer for this player while they wait for others
             clearInterval(this.timerInterval);
 
             this.socket.send(JSON.stringify({
@@ -237,19 +237,19 @@ Vue.createApp({
         },
 
         getPlayerPositionStyle: function (position) {
-
+            // Calculate starting position (5% from left edge)
             const startPosition = 5;
 
-
+            // Calculate finish position (95% from left edge)
             const finishPosition = 95;
 
-
+            // Calculate the total distance to travel
             const totalDistance = finishPosition - startPosition;
 
-
+            // Calculate the current position as a percentage of the total distance
             const currentPercentage = position / this.raceTrackLength;
 
-
+            // Calculate the actual left position
             const leftPosition = startPosition + (totalDistance * currentPercentage);
 
             return {
@@ -258,19 +258,20 @@ Vue.createApp({
         },
 
         returnToLobby: function () {
-
+            // Reset player data
             this.playerName = "";
             this.playerColor = "#3498db";
             this.selectedAnswer = null;
             this.answerResult = null;
             this.currentQuestion = null;
 
+            // Change game state to login
             this.gameState = "login";
 
-
+            // Clear any previous errors
             this.errorMessage = "";
 
-
+            // Reconnect to server to get a fresh connection
             if (this.socket.readyState === WebSocket.OPEN) {
                 this.socket.close();
             }
