@@ -2,35 +2,21 @@ const WebSocket = require('ws');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 
-// Enable CORS for development
 app.use(cors());
 
-// Debug logging to help troubleshoot
-console.log('Current directory:', __dirname);
-try {
-    console.log('Public directory contents:', fs.readdirSync(path.join(__dirname, 'public')));
-} catch (err) {
-    console.error('Error reading public directory:', err);
-}
-
-// Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Set up server
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
     console.log(`🚀 Trivia Race server running on port ${PORT}`);
     console.log(`Server is ready! Open http://localhost:${PORT} in your browser.`);
 });
 
-// Initialize WebSocket server
 const wss = new WebSocket.WebSocketServer({ server });
 
-// Game state variables
 let players = [];
 let gameInProgress = false;
 let currentQuestion = null;
@@ -478,8 +464,6 @@ wss.on('connection', function connection(ws) {
     });
 });
 
-// Default route to serve the client
 app.get('*', (req, res) => {
-    console.log('Serving index.html for path:', req.path);
-    res.sendFile(path.join(__dirname, 'public/index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

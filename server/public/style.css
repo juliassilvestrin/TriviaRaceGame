@@ -1,3 +1,27 @@
+.return-button {
+    background-color: #ff5722;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    box-shadow: 0 3px 10px rgba(255, 87, 34, 0.4);
+    padding: 12px 25px;
+    margin-top: 20px;
+    font-size: 16px;
+    border-radius: 30px;
+    max-width: 250px;
+    margin: 20px auto 0 auto;
+}
+
+.return-button:hover {
+    background-color: #ff7043;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 87, 34, 0.6);
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -36,18 +60,7 @@ h1 {
     backdrop-filter: blur(5px);
 }
 
-.connection-status {
-    background-color: rgba(255, 87, 34, 0.8);
-    color: white;
-    text-align: center;
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-}
 
-/* Login Screen */
 .login-screen {
     text-align: center;
 }
@@ -123,7 +136,7 @@ button:hover {
     margin-top: 10px;
 }
 
-/* Waiting Screen */
+
 .waiting-screen {
     text-align: center;
 }
@@ -155,7 +168,7 @@ button:hover {
     margin-right: 10px;
 }
 
-/* Game Screen */
+
 .race-track {
     position: relative;
     height: 300px;
@@ -208,7 +221,6 @@ button:hover {
     background-position: center;
     font-size: 14px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
-    /* Car shape */
     clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
 }
 
@@ -340,7 +352,7 @@ button:hover {
     border-radius: 10px;
 }
 
-/* Game Over Screen */
+
 .game-over {
     text-align: center;
 }
@@ -368,31 +380,7 @@ button:hover {
     font-weight: bold;
 }
 
-.return-button {
-    background-color: #ff5722;
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-transform: uppercase;
-    font-weight: bold;
-    letter-spacing: 1px;
-    box-shadow: 0 3px 10px rgba(255, 87, 34, 0.4);
-    padding: 12px 25px;
-    margin-top: 20px;
-    font-size: 16px;
-    border-radius: 30px;
-    max-width: 250px;
-    margin: 20px auto 0 auto;
-}
 
-.return-button:hover {
-    background-color: #ff7043;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 87, 34, 0.6);
-}
-
-/* Mobile optimization */
 @media (max-width: 600px) {
     body {
         padding: 10px;
@@ -415,3 +403,6 @@ button:hover {
         height: 350px;
     }
 }
+
+
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&family=Racing+Sans+One&display=swap');
