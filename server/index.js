@@ -2,27 +2,40 @@ const WebSocket = require('ws');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 
+
 app.use(cors());
+
+
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
-    console.log(`🚀 Trivia Race server running on port ${PORT}`);
-    console.log(`Server is ready! Open http://localhost:${PORT} in your browser.`);
+    console.log(`Trivia Race server running on port ${PORT}`);
+    console.log(`Server is ready, Open http://localhost:${PORT} in your browser.`);
 });
 
+
 const wss = new WebSocket.WebSocketServer({ server });
+
 
 let players = [];
 let gameInProgress = false;
 let currentQuestion = null;
 let questionTimeout = null;
 let currentAnswersCount = 0;
+let usedQuestionIndices = new Set();
 const raceTrackLength = 5;
+
 
 const triviaQuestions = [
     {
@@ -253,9 +266,25 @@ const triviaQuestions = [
 ];
 
 function getRandomQuestion() {
-    const randomIndex = Math.floor(Math.random() * triviaQuestions.length);
+
+    if (usedQuestionIndices.size >= triviaQuestions.length) {
+        usedQuestionIndices.clear();
+        console.log("All questions have been used, resetting the question pool");
+    }
+
+
+    let randomIndex;
+    do {
+        randomIndex = Math.floor(Math.random() * triviaQuestions.length);
+    } while (usedQuestionIndices.has(randomIndex));
+
+
+    usedQuestionIndices.add(randomIndex);
+    console.log(`Using question #${randomIndex}, ${usedQuestionIndices.size}/${triviaQuestions.length} used`);
+
     return triviaQuestions[randomIndex];
 }
+
 
 function broadcast(data) {
     wss.clients.forEach(function (client) {
@@ -264,6 +293,7 @@ function broadcast(data) {
         }
     });
 }
+
 
 function sendNewQuestion() {
     currentQuestion = getRandomQuestion();
@@ -287,6 +317,16 @@ function sendNewQuestion() {
     }, 15000);
 }
 
+
+function checkAllPlayersReady() {
+
+    if (players.length === 0) return false;
+
+
+    return players.every(player => player.ready);
+}
+
+
 function checkWinner() {
     for (let player of players) {
         if (player.position >= raceTrackLength) {
@@ -305,6 +345,7 @@ function checkWinner() {
 function resetGame() {
     for (let player of players) {
         player.position = 0;
+        player.ready = false;
     }
 
     broadcast({
@@ -313,7 +354,8 @@ function resetGame() {
             id: p.id,
             name: p.name,
             position: p.position,
-            color: p.color
+            color: p.color,
+            ready: p.ready
         }))
     });
 
@@ -326,7 +368,9 @@ function resetGame() {
 wss.on('connection', function connection(ws) {
     console.log("New player connected!");
 
+
     const playerId = Date.now().toString();
+
 
     ws.send(JSON.stringify({
         action: 'welcome',
@@ -334,13 +378,16 @@ wss.on('connection', function connection(ws) {
         gameInProgress: gameInProgress
     }));
 
+
     ws.on('message', function (data) {
         try {
             const message = JSON.parse(data);
 
             switch (message.action) {
                 case 'joinGame':
+
                     const colorIsUsed = players.some(p => p.color === message.playerColor);
+
 
                     let finalColor = message.playerColor;
                     if (colorIsUsed) {
@@ -358,11 +405,13 @@ wss.on('connection', function connection(ws) {
                         name: message.playerName,
                         color: finalColor,
                         position: 0,
+                        ready: false,
                         socket: ws
                     };
 
                     players.push(newPlayer);
                     console.log(`Player ${message.playerName} joined the game (color: ${finalColor})`);
+
 
                     broadcast({
                         action: 'playerList',
@@ -370,18 +419,41 @@ wss.on('connection', function connection(ws) {
                             id: p.id,
                             name: p.name,
                             position: p.position,
-                            color: p.color
+                            color: p.color,
+                            ready: p.ready
                         }))
                     });
+                    break;
 
-                    if (players.length >= 2 && !gameInProgress) {
-                        gameInProgress = true;
-                        setTimeout(sendNewQuestion, 3000);
+                case 'playerReady':
+
+                    const playerToReady = players.find(p => p.id === message.playerId);
+                    if (playerToReady) {
+                        playerToReady.ready = true;
+                        console.log(`Player ${playerToReady.name} is ready!`);
+
 
                         broadcast({
-                            action: 'gameStarting',
-                            countdown: 3
+                            action: 'playerList',
+                            players: players.map(p => ({
+                                id: p.id,
+                                name: p.name,
+                                position: p.position,
+                                color: p.color,
+                                ready: p.ready
+                            }))
                         });
+
+                        //check if everyone is ready
+                        if (players.length >= 2 && checkAllPlayersReady() && !gameInProgress) {
+                            gameInProgress = true;
+                            setTimeout(sendNewQuestion, 3000);
+
+                            broadcast({
+                                action: 'gameStarting',
+                                countdown: 3
+                            });
+                        }
                     }
                     break;
 
@@ -434,6 +506,7 @@ wss.on('connection', function connection(ws) {
         }
     });
 
+
     ws.on('close', function () {
         const index = players.findIndex(p => p.socket === ws);
         if (index !== -1) {
@@ -441,15 +514,18 @@ wss.on('connection', function connection(ws) {
             console.log(`Player ${playerName} disconnected`);
             players.splice(index, 1);
 
+
             broadcast({
                 action: 'playerList',
                 players: players.map(p => ({
                     id: p.id,
                     name: p.name,
                     position: p.position,
-                    color: p.color
+                    color: p.color,
+                    ready: p.ready
                 }))
             });
+
 
             if (players.length < 2 && gameInProgress) {
                 gameInProgress = false;
@@ -464,6 +540,7 @@ wss.on('connection', function connection(ws) {
     });
 });
 
+
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public/index.html'));
 });

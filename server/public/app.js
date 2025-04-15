@@ -8,6 +8,7 @@ Vue.createApp({
             availableColors: ["#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c"],
             usedColors: [],
             gameState: "login",
+            isReady: false,
             players: [],
             currentQuestion: null,
             questionOptions: [],
@@ -28,7 +29,6 @@ Vue.createApp({
         connectSocket: function () {
             this.connectionStatus = "connecting";
 
-
             const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
             const wsUrl = wsProtocol + window.location.host;
 
@@ -47,7 +47,6 @@ Vue.createApp({
             this.socket.addEventListener("close", () => {
                 console.log("Disconnected from server");
                 this.connectionStatus = "disconnected";
-
 
                 setTimeout(this.connectSocket, 3000);
             });
@@ -70,7 +69,7 @@ Vue.createApp({
                 case 'playerList':
                     this.players = data.players;
 
-
+                    //upddate color list 
                     this.usedColors = this.players.map(player => player.color);
 
 
@@ -80,6 +79,12 @@ Vue.createApp({
                             this.playerColor = availableColor;
                         }
                     }
+
+                    //check ready status
+                    const currentPlayer = this.players.find(p => p.id === this.playerId);
+                    if (currentPlayer) {
+                        this.isReady = currentPlayer.ready;
+                    }
                     break;
 
                 case 'gameStarting':
@@ -87,7 +92,7 @@ Vue.createApp({
                     this.countdown = data.countdown;
                     this.countdownMessage = `Race starting in ${this.countdown}...`;
 
-
+                    //start countdown
                     const countdownInterval = setInterval(() => {
                         this.countdown--;
                         this.countdownMessage = `Race starting in ${this.countdown}...`;
@@ -110,7 +115,7 @@ Vue.createApp({
                     this.answerResult = null;
                     this.timeLeft = 15;
 
-
+                    // Start timer
                     clearInterval(this.timerInterval);
                     this.timerInterval = setInterval(() => {
                         this.timeLeft--;
@@ -176,6 +181,7 @@ Vue.createApp({
                     this.selectedAnswer = null;
                     this.answerResult = null;
                     this.winner = null;
+                    this.isReady = false;
                     clearInterval(this.timerInterval);
                     break;
 
@@ -203,6 +209,17 @@ Vue.createApp({
                 action: 'joinGame',
                 playerName: this.playerName,
                 playerColor: this.playerColor
+            }));
+        },
+
+        toggleReady: function () {
+            if (this.isReady) return;
+
+            this.isReady = true;
+
+            this.socket.send(JSON.stringify({
+                action: 'playerReady',
+                playerId: this.playerId
             }));
         },
 
@@ -258,12 +275,14 @@ Vue.createApp({
         },
 
         returnToLobby: function () {
-
+            //reset player stuff
             this.playerName = "";
             this.playerColor = "#3498db";
             this.selectedAnswer = null;
             this.answerResult = null;
             this.currentQuestion = null;
+            this.isReady = false;
+
 
             this.gameState = "login";
 

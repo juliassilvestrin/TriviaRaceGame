@@ -14,6 +14,12 @@
     <div id="app">
         <h1>Trivia Race</h1>
 
+        <!-- connection informar -->
+        <div v-if="connectionStatus !== 'connected'" class="connection-status">
+            {{ connectionStatus === 'connecting' ? 'Connecting to server...' : 'Disconnected. Trying to reconnect...' }}
+        </div>
+
+        <!--login screen -->
         <div v-if="gameState === 'login'" class="container login-screen">
             <h2>Join the Race</h2>
             <div class="login-form">
@@ -35,22 +41,30 @@
             </div>
         </div>
 
-
+        <!--waiting screen -->
         <div v-if="gameState === 'waiting'" class="container waiting-screen">
             <h2>Drivers Ready</h2>
-            <p>Waiting for more racers to join (need at least 2)</p>
+            <p>Waiting for all racers to be ready</p>
 
             <div class="player-list">
                 <div v-for="player in players" class="player-item">
                     <div class="player-color" :style="{ backgroundColor: player.color }"></div>
                     <span>{{ player.name }}</span>
+                    <span class="ready-status" :class="{ 'ready': player.ready }">
+                        {{ player.ready ? 'READY' : 'Not Ready' }}
+                    </span>
                 </div>
             </div>
+
+
+            <button class="ready-button" :class="{ 'ready': isReady }" @click="toggleReady" :disabled="isReady">
+                {{ isReady ? "I'm Ready!" : "I'm Ready" }}
+            </button>
         </div>
 
-
+        <!--main screen-->
         <div v-if="gameState === 'playing'" class="container game-screen">
-
+            <!--track -->
             <div class="race-track">
                 <div class="starting-line"></div>
                 <div class="finish-line"></div>
@@ -67,6 +81,7 @@
                 {{ countdownMessage }}
             </div>
 
+            <!--question part -->
             <div v-if="currentQuestion" class="question-container">
                 <div class="timer">
                     <p>Time Left: {{ timeLeft }}s</p>
@@ -95,7 +110,7 @@
             </div>
         </div>
 
-
+        <!--gameover sreen -->
         <div v-if="gameState === 'gameOver'" class="container game-over">
             <h2>Finish Line!</h2>
             <p class="winner-message">🏆 {{ winner }} has won the race! 🏆</p>
@@ -103,7 +118,7 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="app.js"></script>
 </body>
 
