@@ -69,8 +69,10 @@ Vue.createApp({
                 case 'playerList':
                     this.players = data.players;
 
-                    //upddate color list 
-                    this.usedColors = this.players.map(player => player.color);
+
+                    this.usedColors = this.players
+                        .filter(player => player.id !== this.playerId)
+                        .map(player => player.color);
 
 
                     if (this.usedColors.includes(this.playerColor) && this.gameState === "login") {
@@ -80,7 +82,7 @@ Vue.createApp({
                         }
                     }
 
-                    //check ready status
+
                     const currentPlayer = this.players.find(p => p.id === this.playerId);
                     if (currentPlayer) {
                         this.isReady = currentPlayer.ready;
@@ -92,7 +94,7 @@ Vue.createApp({
                     this.countdown = data.countdown;
                     this.countdownMessage = `Race starting in ${this.countdown}...`;
 
-                    //start countdown
+                    // starts countdown
                     const countdownInterval = setInterval(() => {
                         this.countdown--;
                         this.countdownMessage = `Race starting in ${this.countdown}...`;
@@ -115,7 +117,7 @@ Vue.createApp({
                     this.answerResult = null;
                     this.timeLeft = 15;
 
-                    // Start timer
+                    //start timer
                     clearInterval(this.timerInterval);
                     this.timerInterval = setInterval(() => {
                         this.timeLeft--;
@@ -257,7 +259,6 @@ Vue.createApp({
 
             const startPosition = 5;
 
-
             const finishPosition = 95;
 
 
@@ -275,14 +276,13 @@ Vue.createApp({
         },
 
         returnToLobby: function () {
-            //reset player stuff
+            //reset player data
             this.playerName = "";
             this.playerColor = "#3498db";
             this.selectedAnswer = null;
             this.answerResult = null;
             this.currentQuestion = null;
             this.isReady = false;
-
 
             this.gameState = "login";
 
@@ -298,7 +298,7 @@ Vue.createApp({
     },
 
     created: function () {
-        console.log("Trivia Race App loaded!");
+        console.log("trivia race app loaded");
         this.connectSocket();
     }
 }).mount("#app");

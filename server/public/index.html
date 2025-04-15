@@ -14,12 +14,12 @@
     <div id="app">
         <h1>Trivia Race</h1>
 
-        <!-- connection informar -->
+        <!-- connection stuf -->
         <div v-if="connectionStatus !== 'connected'" class="connection-status">
             {{ connectionStatus === 'connecting' ? 'Connecting to server...' : 'Disconnected. Trying to reconnect...' }}
         </div>
 
-        <!--login screen -->
+        <!--login screen-->
         <div v-if="gameState === 'login'" class="container login-screen">
             <h2>Join the Race</h2>
             <div class="login-form">
@@ -29,9 +29,9 @@
                     <p>Choose your car color:</p>
                     <div class="color-selector">
                         <div v-for="color in availableColors"
-                            :style="{ backgroundColor: color, opacity: usedColors.includes(color) && color !== playerColor ? 0.3 : 1 }"
+                            :style="{ backgroundColor: color, opacity: usedColors.includes(color) ? 0.3 : 1 }"
                             :class="['color-option', { selected: playerColor === color }]"
-                            @click="usedColors.includes(color) && color !== playerColor ? null : playerColor = color">
+                            @click="usedColors.includes(color) ? null : playerColor = color">
                         </div>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
             </button>
         </div>
 
-        <!--main screen-->
+        <!--main screen -->
         <div v-if="gameState === 'playing'" class="container game-screen">
             <!--track -->
             <div class="race-track">
@@ -81,7 +81,7 @@
                 {{ countdownMessage }}
             </div>
 
-            <!--question part -->
+            <!--question part-->
             <div v-if="currentQuestion" class="question-container">
                 <div class="timer">
                     <p>Time Left: {{ timeLeft }}s</p>
@@ -110,7 +110,7 @@
             </div>
         </div>
 
-        <!--gameover sreen -->
+        <!--game over screen -->
         <div v-if="gameState === 'gameOver'" class="container game-over">
             <h2>Finish Line!</h2>
             <p class="winner-message">🏆 {{ winner }} has won the race! 🏆</p>
