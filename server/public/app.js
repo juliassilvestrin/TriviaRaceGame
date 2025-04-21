@@ -174,6 +174,22 @@ Vue.createApp({
                     this.gameState = "gameOver";
                     this.winner = data.winner;
                     clearInterval(this.timerInterval);
+
+                    // Automatically return to waiting room after 5 seconds
+                    setTimeout(() => {
+                        // Reset game state but keep in waiting room
+                        this.selectedAnswer = null;
+                        this.answerResult = null;
+                        this.currentQuestion = null;
+                        this.isReady = false;
+                        this.gameState = "waiting";
+
+                        // Send reset message to server
+                        this.socket.send(JSON.stringify({
+                            action: 'resetGame',
+                            playerId: this.playerId
+                        }));
+                    }, 5000);
                     break;
 
                 case 'resetGame':
@@ -276,24 +292,21 @@ Vue.createApp({
         },
 
         returnToLobby: function () {
-            //reset player data
-            this.playerName = "";
-            this.playerColor = "#3498db";
+            //reset player data but keep name and color
             this.selectedAnswer = null;
             this.answerResult = null;
             this.currentQuestion = null;
             this.isReady = false;
 
-            this.gameState = "login";
-
+            this.gameState = "waiting";
 
             this.errorMessage = "";
 
 
-            if (this.socket.readyState === WebSocket.OPEN) {
-                this.socket.close();
-            }
-            this.connectSocket();
+            this.socket.send(JSON.stringify({
+                action: 'resetGame',
+                playerId: this.playerId
+            }));
         }
     },
 
