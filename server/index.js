@@ -34,7 +34,7 @@ let currentQuestion = null;
 let questionTimeout = null;
 let currentAnswersCount = 0;
 let usedQuestionIndices = new Set();
-const raceTrackLength = 5;
+const raceTrackLength = 10;
 
 
 const triviaQuestions = [
@@ -478,15 +478,8 @@ wss.on('connection', function connection(ws) {
                             newPosition: player.position
                         });
 
-                        if (player.position >= raceTrackLength) {
-                            broadcast({
-                                action: 'gameOver',
-                                winner: player.name
-                            });
-
-                            clearTimeout(questionTimeout);
-                            setTimeout(resetGame, 10000);
-                        }
+                        // Use the checkWinner function instead of duplicating the logic
+                        checkWinner();
                     } else if (currentQuestion) {
                         ws.send(JSON.stringify({
                             action: 'wrongAnswer',
@@ -498,6 +491,25 @@ wss.on('connection', function connection(ws) {
                     if (currentAnswersCount >= players.length) {
                         clearTimeout(questionTimeout);
                         setTimeout(sendNewQuestion, 2000);
+                    }
+                    break;
+
+                case 'resetGame':
+                    const playerToReset = players.find(p => p.id === message.playerId);
+                    if (playerToReset) {
+                        playerToReset.position = 0;
+                        playerToReset.ready = false;
+
+                        broadcast({
+                            action: 'playerList',
+                            players: players.map(p => ({
+                                id: p.id,
+                                name: p.name,
+                                position: p.position,
+                                color: p.color,
+                                ready: p.ready
+                            }))
+                        });
                     }
                     break;
             }
