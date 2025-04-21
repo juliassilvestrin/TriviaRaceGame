@@ -20,7 +20,7 @@ Vue.createApp({
             winner: null,
             countdownMessage: "",
             errorMessage: "",
-            raceTrackLength: 5,
+            raceTrackLength: 10,
             connectionStatus: "disconnected"
         };
     },
