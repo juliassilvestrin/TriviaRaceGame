@@ -330,6 +330,8 @@ function checkAllPlayersReady() {
 function checkWinner() {
     for (let player of players) {
         if (player.position >= raceTrackLength) {
+            gameInProgress = false;
+            clearTimeout(questionTimeout);
             broadcast({
                 action: 'gameOver',
                 winner: player.name
@@ -478,8 +480,8 @@ wss.on('connection', function connection(ws) {
                             newPosition: player.position
                         });
 
-                        // Use the checkWinner function instead of duplicating the logic
-                        checkWinner();
+                        const gameOver = checkWinner();
+                        if (gameOver) break;
                     } else if (currentQuestion) {
                         ws.send(JSON.stringify({
                             action: 'wrongAnswer',

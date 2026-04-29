@@ -28,6 +28,10 @@ Trivia Race is a real-time multiplayer web game where players compete against ea
 5. Answer trivia questions correctly to move your car forward
 6. The first player to answer 5 questions correctly wins the race
 
+## Screenshots
+
+![Trivia Race login screen](images/websocket.png)
+
 ## Technical Details
 
 - Built with Node.js, Express, and WebSockets for real-time communication
